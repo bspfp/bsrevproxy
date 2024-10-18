@@ -1,0 +1,3 @@
+[submodule "gosimplelog"]
+	path = pkg/gosimplelog
+	url = https://github.com/bspfp/go-simple-log.git
