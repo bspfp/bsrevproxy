@@ -170,7 +170,9 @@ func createConfigFile(cfgFilePath string) {
 	}
 	defer cfgFile.Close()
 
-	err = yaml.NewEncoder(cfgFile).Encode(&emptyConfig)
+	enc := yaml.NewEncoder(cfgFile)
+	enc.SetIndent(2)
+	err = enc.Encode(&emptyConfig)
 	if err != nil {
 		log.Fatalf("failed to encode config file: %+v\n", err)
 	}
