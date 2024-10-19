@@ -2,6 +2,8 @@ package server
 
 import (
 	"bspfp/bsrevproxy/internal/config"
+	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -29,6 +31,15 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	log.Printf("No matching route found: %q\n", []string{
+		"method", r.Method,
+		"url", r.URL.String(),
+		"remote", r.RemoteAddr,
+		"user-agent", r.UserAgent(),
+		"host", r.Host,
+		"headers", fmt.Sprintf("%q", r.Header),
+	})
 
 	http.Redirect(w, r, appCfg.DefaultRedirectUrl, http.StatusFound)
 }
