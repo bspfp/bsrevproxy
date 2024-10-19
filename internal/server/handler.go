@@ -10,10 +10,6 @@ import (
 func requestHandler(w http.ResponseWriter, r *http.Request) {
 	appCfg := config.V()
 
-	if handleCORS(appCfg.CORS, w, r) {
-		return
-	}
-
 	for _, cfg := range appCfg.StaticDirs {
 		if handleStatic(cfg, w, r) {
 			return
