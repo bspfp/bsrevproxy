@@ -11,7 +11,7 @@ func handleCORS(cfg *config.CORSConfig, w http.ResponseWriter, r *http.Request) 
 
 	if r.Method == http.MethodOptions {
 		w.Header().Set("Access-Control-Allow-Methods", "GET, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", cfg.AllowHeaders)
+		w.Header().Set("Access-Control-Allow-Headers", "*")
 
 		if !strings.Contains("GET, PUT, DELETE, OPTIONS", r.Header.Get("Access-Control-Request-Method")) {
 			HttpErr(w, http.StatusMethodNotAllowed)

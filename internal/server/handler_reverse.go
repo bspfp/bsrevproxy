@@ -10,11 +10,11 @@ import (
 )
 
 func handleReverseProxy(cfg *config.ReverseProxyConfig, w http.ResponseWriter, r *http.Request) bool {
-	if !strings.HasPrefix(r.URL.String(), cfg.RequestUrl) {
+	if !strings.HasPrefix(r.URL.Path, cfg.RequestPathPrefix) {
 		return false
 	}
 
-	trimmedPath := strings.TrimPrefix(r.URL.Path, cfg.RequestUrl)
+	trimmedPath := strings.TrimPrefix(r.URL.Path, cfg.RequestPathPrefix)
 	targetUrl, err := url.Parse(cfg.TargetUrl + trimmedPath)
 	if err != nil {
 		HttpErr(w, http.StatusBadRequest)
@@ -28,8 +28,6 @@ func handleReverseProxy(cfg *config.ReverseProxyConfig, w http.ResponseWriter, r
 	}
 
 	proxyReq.Header.Add("X-Forwarded-For", r.RemoteAddr)
-	proxyReq.Header.Add("X-Forwarded-Host", r.Host)
-	proxyReq.Header.Add("X-Forwarded-Proto", r.URL.Scheme)
 	for key, values := range r.Header {
 		for _, value := range values {
 			proxyReq.Header.Add(key, value)

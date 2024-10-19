@@ -7,14 +7,14 @@ import (
 )
 
 func handleRedirect(cfg *config.RedirectConfig, w http.ResponseWriter, r *http.Request) bool {
-	if !strings.HasPrefix(r.URL.String(), cfg.RequestUrl) {
+	if !strings.HasPrefix(r.URL.Path, cfg.RequestPathPrefix) {
 		return false
 	}
 
 	targetUrl := cfg.TargetUrl
 
 	if cfg.PassSubPath {
-		subPath := strings.TrimPrefix(r.URL.Path, cfg.RequestUrl)
+		subPath := strings.TrimPrefix(r.URL.Path, cfg.RequestPathPrefix)
 		targetUrl = targetUrl + subPath
 	}
 

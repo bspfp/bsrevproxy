@@ -24,28 +24,26 @@ type Config struct {
 }
 
 type CORSConfig struct {
-	AllowOrigin  string `yaml:"allow_origin"`
-	AllowHeaders string `yaml:"allow_headers"`
+	AllowOrigin string `yaml:"allow_origin"`
 }
 
 type StaticDirConfig struct {
-	RequestHosts      []string `yaml:"request_hosts"`
-	RequestPathPrefix string   `yaml:"request_path_prefix"`
-	LocalPath         string   `yaml:"local_path"`
-	MimeType          string   `yaml:"mime_type"`
+	RequestPathPrefix string `yaml:"request_path_prefix"`
+	LocalPath         string `yaml:"local_path"`
+	MimeType          string `yaml:"mime_type"`
 }
 
 type ReverseProxyConfig struct {
-	RequestUrl string `yaml:"request_url"`
-	TargetUrl  string `yaml:"target_url"`
-	TimeoutSec int    `yaml:",omitempty"`
+	RequestPathPrefix string `yaml:"request_path_prefix"`
+	TargetUrl         string `yaml:"target_url"`
+	TimeoutSec        int    `yaml:",omitempty"`
 }
 
 type RedirectConfig struct {
-	RequestUrl  string `yaml:"request_url"`
-	TargetUrl   string `yaml:"target_url"`
-	PassSubPath bool   `yaml:",omitempty"`
-	PassQuery   bool   `yaml:",omitempty"`
+	RequestPathPrefix string `yaml:"request_path_prefix"`
+	TargetUrl         string `yaml:"target_url"`
+	PassSubPath       bool   `yaml:",omitempty"`
+	PassQuery         bool   `yaml:",omitempty"`
 }
 
 var value atomic.Pointer[Config]
@@ -135,13 +133,11 @@ func createConfigFile(cfgFilePath string) {
 		CertFile: "./cert.pem",
 		KeyFile:  "./key.pem",
 		CORS: &CORSConfig{
-			AllowOrigin:  "*",
-			AllowHeaders: "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+			AllowOrigin: "*",
 		},
 		DefaultRedirectUrl: "https://www.example.com",
 		StaticDirs: []*StaticDirConfig{
 			{
-				RequestHosts:      []string{"https://static.example.com:9091"},
 				RequestPathPrefix: "/file",
 				LocalPath:         "./static",
 				MimeType:          "text/plain",
@@ -149,17 +145,17 @@ func createConfigFile(cfgFilePath string) {
 		},
 		ReverseProxies: []*ReverseProxyConfig{
 			{
-				RequestUrl: "https://api.example.com:9092/db/get",
-				TargetUrl:  "http://localhost:10002/get",
-				TimeoutSec: 3,
+				RequestPathPrefix: "/db/get",
+				TargetUrl:         "http://localhost:10002/get",
+				TimeoutSec:        3,
 			},
 		},
 		Redirects: []*RedirectConfig{
 			{
-				RequestUrl:  "https://some.example.com/abc",
-				TargetUrl:   "https://other.example.com/def",
-				PassSubPath: true,
-				PassQuery:   true,
+				RequestPathPrefix: "/abc",
+				TargetUrl:         "https://other.example.com/def",
+				PassSubPath:       true,
+				PassQuery:         true,
 			},
 		},
 	}

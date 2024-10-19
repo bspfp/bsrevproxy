@@ -11,17 +11,6 @@ import (
 )
 
 func handleStatic(cfg *config.StaticDirConfig, w http.ResponseWriter, r *http.Request) bool {
-	hostValid := false
-	for _, host := range cfg.RequestHosts {
-		if strings.HasPrefix(r.URL.String(), host) {
-			hostValid = true
-			break
-		}
-	}
-	if !hostValid {
-		return false
-	}
-
 	if !strings.HasPrefix(r.URL.Path, cfg.RequestPathPrefix) {
 		return false
 	}
