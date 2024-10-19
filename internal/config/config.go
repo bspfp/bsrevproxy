@@ -2,8 +2,11 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
+	"sync/atomic"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -45,9 +48,13 @@ type RedirectConfig struct {
 	PassQuery   bool   `yaml:",omitempty"`
 }
 
-var Value Config
+var value atomic.Pointer[Config]
 
-func ParseFlag() {
+func V() *Config {
+	return value.Load()
+}
+
+func ParseFlag() Stopper {
 	createOnly := flag.Bool("c", false, "create config file and exit")
 	filePath := flag.String("f", "./config.yaml", "run with config file path")
 	flag.Parse()
@@ -60,22 +67,65 @@ func ParseFlag() {
 
 	if *createOnly {
 		createConfigFile(*filePath)
+		panic("never be reached") // because os.Exit() is called in createConfigFile()
 	} else {
-		readConfigFile(*filePath)
+		modTime, err := getModTime(*filePath)
+		if err != nil {
+			log.Fatalf("%+v\n", err)
+		}
+
+		newCfg, err := readConfigFile(*filePath)
+		if err != nil {
+			log.Fatalf("%+v\n", err)
+		}
+		setV(newCfg)
+
+		return startWatch(*filePath, modTime)
 	}
 }
 
-func readConfigFile(cfgFilePath string) {
+func setV(newCfg *Config) {
+	if value.CompareAndSwap(nil, newCfg) {
+		return
+	}
+
+	cfg := V()
+
+	// The following variables cannot update during execution.
+	newCfg.Host = cfg.Host
+	newCfg.Port = cfg.Port
+	newCfg.CertFile = cfg.CertFile
+	newCfg.KeyFile = cfg.KeyFile
+
+	value.Store(newCfg)
+}
+
+func getModTime(cfgFilePath string) (time.Time, error) {
+	cfgStat, err := os.Stat(cfgFilePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return time.Time{}, fmt.Errorf("config file not found: %w", err)
+		}
+		return time.Time{}, fmt.Errorf("failed to stat config file: %w", err)
+	}
+	return cfgStat.ModTime(), nil
+}
+
+func readConfigFile(cfgFilePath string) (*Config, error) {
+	newCfg := &Config{}
+
 	cfgFile, err := os.Open(cfgFilePath)
 	if err != nil {
-		log.Fatalf("failed to open config file: %v", err)
+		return nil, fmt.Errorf("failed to open config file: %w", err)
 	}
 	defer cfgFile.Close()
 
-	err = yaml.NewDecoder(cfgFile).Decode(&Value)
+	err = yaml.NewDecoder(cfgFile).Decode(newCfg)
 	if err != nil {
-		log.Fatalf("failed to parse config file: %v", err)
+		return nil, fmt.Errorf("failed to parse config file: %w", err)
 	}
+
+	return newCfg, nil
 }
 
 func createConfigFile(cfgFilePath string) {

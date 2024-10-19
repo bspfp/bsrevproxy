@@ -16,7 +16,8 @@ func main() {
 	}
 	defer logCloser.Close()
 
-	config.ParseFlag()
+	cfgWatchStopper := config.ParseFlag()
+	defer cfgWatchStopper.Stop()
 
 	server.StartServer()
 }

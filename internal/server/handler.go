@@ -6,27 +6,29 @@ import (
 )
 
 func requestHandler(w http.ResponseWriter, r *http.Request) {
-	if handleCORS(w, r) {
+	appCfg := config.V()
+
+	if handleCORS(appCfg.CORS, w, r) {
 		return
 	}
 
-	for _, cfg := range config.Value.StaticDirs {
+	for _, cfg := range appCfg.StaticDirs {
 		if handleStatic(cfg, w, r) {
 			return
 		}
 	}
 
-	for _, cfg := range config.Value.ReverseProxies {
+	for _, cfg := range appCfg.ReverseProxies {
 		if handleReverseProxy(cfg, w, r) {
 			return
 		}
 	}
 
-	for _, cfg := range config.Value.Redirects {
+	for _, cfg := range appCfg.Redirects {
 		if handleRedirect(cfg, w, r) {
 			return
 		}
 	}
 
-	http.Redirect(w, r, config.Value.DefaultRedirectUrl, http.StatusFound)
+	http.Redirect(w, r, appCfg.DefaultRedirectUrl, http.StatusFound)
 }

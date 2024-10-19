@@ -13,8 +13,10 @@ import (
 )
 
 func StartServer() {
+	appCfg := config.V()
+
 	server := &http.Server{
-		Addr:    fmt.Sprintf("%v:%v", config.Value.Host, config.Value.Port),
+		Addr:    fmt.Sprintf("%v:%v", appCfg.Host, appCfg.Port),
 		Handler: http.HandlerFunc(requestHandler),
 	}
 
@@ -22,13 +24,13 @@ func StartServer() {
 
 	go func() {
 		var err error
-		if config.Value.CertFile == "" && config.Value.KeyFile == "" {
+		if appCfg.CertFile == "" && appCfg.KeyFile == "" {
 			err = server.ListenAndServe()
 		} else {
-			err = server.ListenAndServeTLS(config.Value.CertFile, config.Value.KeyFile)
+			err = server.ListenAndServeTLS(appCfg.CertFile, appCfg.KeyFile)
 		}
 		if err != nil && err != http.ErrServerClosed {
-			log.Fatalf("could not listen on %s:%d: %v\n", config.Value.Host, config.Value.Port, err)
+			log.Fatalf("could not listen on %s:%d: %v\n", appCfg.Host, appCfg.Port, err)
 		}
 	}()
 
