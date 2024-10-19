@@ -13,7 +13,7 @@ import (
 func handleStatic(cfg *config.StaticDirConfig, w http.ResponseWriter, r *http.Request) bool {
 	hostValid := false
 	for _, host := range cfg.RequestHosts {
-		if r.Host == host {
+		if strings.HasPrefix(r.URL.String(), host) {
 			hostValid = true
 			break
 		}
